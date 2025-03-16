@@ -1,0 +1,37 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "动漫圣地巡礼数据分析平台后端",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "dev": "npx ts-node src/main.ts",
+    "start:dev": "npx nodemon --watch src/**/*.ts --exec npx ts-node src/main.ts"
+  },
+  "keywords": [
+    "anime",
+    "pilgrimage",
+    "data-analysis",
+    "nestjs"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@nestjs/common": "^10.3.6",
+    "@nestjs/core": "^10.3.6",
+    "@nestjs/platform-express": "^10.3.6",
+    "@nestjs/typeorm": "^10.0.2",
+    "cors": "^2.8.5",
+    "reflect-metadata": "^0.2.1",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.13.0",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.3"
+  }
+}

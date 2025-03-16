@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>离线图表 - 无需任何依赖</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #1e1e1e;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #333;
+      border-radius: 8px;
+    }
+    h1 {
+      color: #FF00FF;
+      text-align: center;
+    }
+    .chart {
+      width: 100%;
+      height: 400px;
+      margin: 20px 0;
+      border: 1px solid #444;
+      position: relative;
+    }
+    .note {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: rgba(255, 0, 255, 0.1);
+      border-radius: 4px;
+      font-size: 14px;
+      color: #ccc;
+    }
+    .buttons {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    .button {
+      padding: 10px 20px;
+      margin: 0 10px;
+      background-color: #FF00FF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .button.blue {
+      background-color: #00FFFF;
+      color: black;
+    }
+    .loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: rgba(0,0,0,0.7);
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top: 4px solid #FF00FF;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>100% 离线图表</h1>
+    
+    <div class="buttons">
+      <button class="button" onclick="drawPieChart()">饼图</button>
+      <button class="button blue" onclick="drawBarChart()">柱状图</button>
+      <button class="button" onclick="drawLineChart()">折线图</button>
+    </div>
+    
+    <div class="chart" id="chart">
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+      </div>
+    </div>
+    
+    <div class="note">
+      <strong>说明：</strong> 此页面完全不依赖任何外部库，所有代码均内联在HTML文件中。
+      你可以将此文件保存到本地，然后直接在浏览器中打开，无需任何服务器或网络连接。
+    </div>
+  </div>
+  
+  <script>
+    // 简易版ECharts核心功能实现
+    
+    // 全局变量
+    let currentChart = null;
+    
+    // 隐藏加载动画
+    function hideLoading() {
+      document.getElementById('loading').style.display = 'none';
+    }
+    
+    // 显示加载动画
+    function showLoading() {
+      document.getElementById('loading').style.display = 'flex';
+    }
+    
+    // 清除图表区域
+    function clearChart() {
+      const chartElement = document.getElementById('chart');
+      
+      // 清除旧的SVG元素
+      while (chartElement.firstChild) {
+        if (chartElement.firstChild.id !== 'loading') {
+          chartElement.removeChild(chartElement.firstChild);
+        }
+      }
+      
+      return chartElement;
+    }
+    
+    // 绘制饼图
+    function drawPieChart() {
+      showLoading();
+      currentChart = 'pie';
+      
+      setTimeout(() => {
+        try {
+          const chartElement = clearChart();
+          
+          // 数据
+          const data = [
+            { value: 35, name: '东京', color: '#FF00FF' },
+            { value: 25, name: '京都', color: '#00FFFF' },
+            { value: 20, name: '大阪', color: '#39FF14' },
+            { value: 15, name: '奈良', color: '#FFA500' },
+            { value: 5, name: '其他', color: '#1E90FF' }
+          ];
+          
+          // 计算总和
+          const total = data.reduce((sum, item) => sum + item.value, 0);
+          
+          // 创建SVG元素
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('width', '100%');
+          svg.setAttribute('height', '100%');
+          svg.setAttribute('viewBox', '0 0 400 400');
+          chartElement.appendChild(svg);
+          
+          // 绘制标题
+          const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          title.setAttribute('x', '200');
+          title.setAttribute('y', '30');
+          title.setAttribute('text-anchor', 'middle');
+          title.setAttribute('fill', 'white');
+          title.setAttribute('font-size', '18');
+          title.textContent = '地区分布';
+          svg.appendChild(title);
+          
+          // 绘制饼图
+          const centerX = 200;
+          const centerY = 200;
+          const radius = 150;
+          
+          let startAngle = 0;
+          
+          // 添加图例
+          const legend = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          legend.setAttribute('transform', 'translate(350, 100)');
+          svg.appendChild(legend);
+          
+          data.forEach((item, index) => {
+            // 计算角度
+            const angle = (item.value / total) * Math.PI * 2;
+            
+            // 计算坐标
+            const endAngle = startAngle + angle;
+            const largeArcFlag = angle > Math.PI ? 1 : 0;
+            
+            const x1 = centerX + radius * Math.cos(startAngle);
+            const y1 = centerY + radius * Math.sin(startAngle);
+            const x2 = centerX + radius * Math.cos(endAngle);
+            const y2 = centerY + radius * Math.sin(endAngle);
+            
+            // 创建路径
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`);
+            path.setAttribute('fill', item.color);
+            path.setAttribute('stroke', '#222');
+            path.setAttribute('stroke-width', '1');
+            
+            // 添加悬停效果
+            path.onmouseover = function() {
+              this.setAttribute('opacity', '0.8');
+              
+              // 显示数值
+              const midAngle = startAngle + angle / 2;
+              const labelX = centerX + (radius * 0.7) * Math.cos(midAngle);
+              const labelY = centerY + (radius * 0.7) * Math.sin(midAngle);
+              
+              const tooltip = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+              tooltip.setAttribute('id', 'tooltip');
+              tooltip.setAttribute('x', labelX);
+              tooltip.setAttribute('y', labelY);
+              tooltip.setAttribute('text-anchor', 'middle');
+              tooltip.setAttribute('fill', 'white');
+              tooltip.setAttribute('font-size', '14');
+              tooltip.textContent = `${item.name}: ${item.value} (${Math.round(item.value / total * 100)}%)`;
+              svg.appendChild(tooltip);
+            };
+            
+            path.onmouseout = function() {
+              this.setAttribute('opacity', '1');
+              const tooltip = svg.getElementById('tooltip');
+              if (tooltip) svg.removeChild(tooltip);
+            };
+            
+            svg.appendChild(path);
+            
+            // 添加标签
+            const midAngle = startAngle + angle / 2;
+            let labelX = centerX + (radius * 0.85) * Math.cos(midAngle);
+            let labelY = centerY + (radius * 0.85) * Math.sin(midAngle);
+            
+            // 添加图例
+            const legendItem = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            legendItem.setAttribute('transform', `translate(0, ${index * 20})`);
+            
+            const legendColor = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            legendColor.setAttribute('width', '10');
+            legendColor.setAttribute('height', '10');
+            legendColor.setAttribute('fill', item.color);
+            
+            const legendText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            legendText.setAttribute('x', '15');
+            legendText.setAttribute('y', '9');
+            legendText.setAttribute('fill', 'white');
+            legendText.setAttribute('font-size', '12');
+            legendText.textContent = item.name;
+            
+            legendItem.appendChild(legendColor);
+            legendItem.appendChild(legendText);
+            legend.appendChild(legendItem);
+            
+            startAngle = endAngle;
+          });
+          
+          hideLoading();
+        } catch (error) {
+          console.error("绘制饼图出错:", error);
+          const chartElement = clearChart();
+          const errorMsg = document.createElement('div');
+          errorMsg.style.padding = '20px';
+          errorMsg.style.color = 'red';
+          errorMsg.textContent = '绘制图表时出错: ' + error.message;
+          chartElement.appendChild(errorMsg);
+          hideLoading();
+        }
+      }, 500);
+    }
+    
+    // 绘制柱状图
+    function drawBarChart() {
+      showLoading();
+      currentChart = 'bar';
+      
+      setTimeout(() => {
+        try {
+          const chartElement = clearChart();
+          
+          // 数据
+          const data = [
+            { name: '东京', value: 350, color: '#FF00FF' },
+            { name: '京都', value: 250, color: '#00FFFF' },
+            { name: '大阪', value: 200, color: '#39FF14' },
+            { name: '奈良', value: 150, color: '#FFA500' },
+            { name: '北海道', value: 50, color: '#1E90FF' }
+          ];
+          
+          // 最大值用于缩放
+          const maxValue = Math.max(...data.map(item => item.value));
+          
+          // 创建SVG元素
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('width', '100%');
+          svg.setAttribute('height', '100%');
+          svg.setAttribute('viewBox', '0 0 400 400');
+          chartElement.appendChild(svg);
+          
+          // 绘制标题
+          const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          title.setAttribute('x', '200');
+          title.setAttribute('y', '30');
+          title.setAttribute('text-anchor', 'middle');
+          title.setAttribute('fill', 'white');
+          title.setAttribute('font-size', '18');
+          title.textContent = '地区游客数量';
+          svg.appendChild(title);
+          
+          // 绘制坐标轴
+          const axisG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          axisG.setAttribute('transform', 'translate(50, 50)');
+          svg.appendChild(axisG);
+          
+          // X轴
+          const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          xAxis.setAttribute('x1', '0');
+          xAxis.setAttribute('y1', '300');
+          xAxis.setAttribute('x2', '300');
+          xAxis.setAttribute('y2', '300');
+          xAxis.setAttribute('stroke', 'white');
+          xAxis.setAttribute('stroke-width', '1');
+          axisG.appendChild(xAxis);
+          
+          // Y轴
+          const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          yAxis.setAttribute('x1', '0');
+          yAxis.setAttribute('y1', '0');
+          yAxis.setAttribute('x2', '0');
+          yAxis.setAttribute('y2', '300');
+          yAxis.setAttribute('stroke', 'white');
+          yAxis.setAttribute('stroke-width', '1');
+          axisG.appendChild(yAxis);
+          
+          // 绘制柱状图
+          const barWidth = 40;
+          const barGap = 20;
+          
+          data.forEach((item, index) => {
+            const barHeight = (item.value / maxValue) * 280;
+            const x = (barWidth + barGap) * index + 20;
+            const y = 300 - barHeight;
+            
+            // 创建柱子
+            const bar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            bar.setAttribute('x', x);
+            bar.setAttribute('y', y);
+            bar.setAttribute('width', barWidth);
+            bar.setAttribute('height', barHeight);
+            bar.setAttribute('fill', item.color);
+            
+            // 添加悬停效果
+            bar.onmouseover = function() {
+              this.setAttribute('opacity', '0.8');
+              
+              const tooltip = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+              tooltip.setAttribute('id', 'tooltip');
+              tooltip.setAttribute('x', x + barWidth / 2);
+              tooltip.setAttribute('y', y - 10);
+              tooltip.setAttribute('text-anchor', 'middle');
+              tooltip.setAttribute('fill', 'white');
+              tooltip.setAttribute('font-size', '14');
+              tooltip.textContent = item.value;
+              axisG.appendChild(tooltip);
+            };
+            
+            bar.onmouseout = function() {
+              this.setAttribute('opacity', '1');
+              const tooltip = svg.getElementById('tooltip');
+              if (tooltip) axisG.removeChild(tooltip);
+            };
+            
+            axisG.appendChild(bar);
+            
+            // 添加标签
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.setAttribute('x', x + barWidth / 2);
+            label.setAttribute('y', 320);
+            label.setAttribute('text-anchor', 'middle');
+            label.setAttribute('fill', 'white');
+            label.setAttribute('font-size', '12');
+            label.textContent = item.name;
+            axisG.appendChild(label);
+          });
+          
+          // 添加Y轴刻度
+          for (let i = 0; i <= 5; i++) {
+            const y = 300 - i * (280 / 5);
+            const value = Math.round(i * (maxValue / 5));
+            
+            const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            tick.setAttribute('x1', '-5');
+            tick.setAttribute('y1', y);
+            tick.setAttribute('x2', '0');
+            tick.setAttribute('y2', y);
+            tick.setAttribute('stroke', 'white');
+            tick.setAttribute('stroke-width', '1');
+            axisG.appendChild(tick);
+            
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.setAttribute('x', '-10');
+            label.setAttribute('y', y + 5);
+            label.setAttribute('text-anchor', 'end');
+            label.setAttribute('fill', 'white');
+            label.setAttribute('font-size', '12');
+            label.textContent = value;
+            axisG.appendChild(label);
+          }
+          
+          hideLoading();
+        } catch (error) {
+          console.error("绘制柱状图出错:", error);
+          const chartElement = clearChart();
+          const errorMsg = document.createElement('div');
+          errorMsg.style.padding = '20px';
+          errorMsg.style.color = 'red';
+          errorMsg.textContent = '绘制图表时出错: ' + error.message;
+          chartElement.appendChild(errorMsg);
+          hideLoading();
+        }
+      }, 500);
+    }
+    
+    // 绘制折线图
+    function drawLineChart() {
+      showLoading();
+      currentChart = 'line';
+      
+      setTimeout(() => {
+        try {
+          const chartElement = clearChart();
+          
+          // 数据
+          const data = [
+            {
+              name: '东京',
+              values: [20, 25, 40, 70, 100, 60, 50, 80, 90, 50, 30, 20],
+              color: '#FF00FF'
+            },
+            {
+              name: '京都',
+              values: [15, 20, 35, 60, 80, 70, 40, 50, 70, 40, 25, 15],
+              color: '#00FFFF'
+            }
+          ];
+          
+          const labels = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+          
+          // 计算最大值用于缩放
+          const allValues = data.flatMap(series => series.values);
+          const maxValue = Math.max(...allValues);
+          
+          // 创建SVG元素
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('width', '100%');
+          svg.setAttribute('height', '100%');
+          svg.setAttribute('viewBox', '0 0 400 400');
+          chartElement.appendChild(svg);
+          
+          // 绘制标题
+          const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          title.setAttribute('x', '200');
+          title.setAttribute('y', '30');
+          title.setAttribute('text-anchor', 'middle');
+          title.setAttribute('fill', 'white');
+          title.setAttribute('font-size', '18');
+          title.textContent = '月度游客变化趋势';
+          svg.appendChild(title);
+          
+          // 绘制坐标轴
+          const axisG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          axisG.setAttribute('transform', 'translate(50, 50)');
+          svg.appendChild(axisG);
+          
+          // X轴
+          const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          xAxis.setAttribute('x1', '0');
+          xAxis.setAttribute('y1', '300');
+          xAxis.setAttribute('x2', '300');
+          xAxis.setAttribute('y2', '300');
+          xAxis.setAttribute('stroke', 'white');
+          xAxis.setAttribute('stroke-width', '1');
+          axisG.appendChild(xAxis);
+          
+          // Y轴
+          const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          yAxis.setAttribute('x1', '0');
+          yAxis.setAttribute('y1', '0');
+          yAxis.setAttribute('x2', '0');
+          yAxis.setAttribute('y2', '300');
+          yAxis.setAttribute('stroke', 'white');
+          yAxis.setAttribute('stroke-width', '1');
+          axisG.appendChild(yAxis);
+          
+          // 绘制X轴标签
+          labels.forEach((label, index) => {
+            const x = index * (300 / (labels.length - 1));
+            
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', x);
+            text.setAttribute('y', '320');
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('fill', 'white');
+            text.setAttribute('font-size', '10');
+            text.textContent = label;
+            axisG.appendChild(text);
+            
+            // 添加网格线
+            const gridLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            gridLine.setAttribute('x1', x);
+            gridLine.setAttribute('y1', '300');
+            gridLine.setAttribute('x2', x);
+            gridLine.setAttribute('y2', '0');
+            gridLine.setAttribute('stroke', '#444');
+            gridLine.setAttribute('stroke-width', '0.5');
+            axisG.appendChild(gridLine);
+          });
+          
+          // 添加Y轴刻度
+          for (let i = 0; i <= 5; i++) {
+            const y = 300 - i * (300 / 5);
+            const value = Math.round(i * (maxValue / 5));
+            
+            const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            tick.setAttribute('x1', '-5');
+            tick.setAttribute('y1', y);
+            tick.setAttribute('x2', '0');
+            tick.setAttribute('y2', y);
+            tick.setAttribute('stroke', 'white');
+            tick.setAttribute('stroke-width', '1');
+            axisG.appendChild(tick);
+            
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.setAttribute('x', '-10');
+            label.setAttribute('y', y + 5);
+            label.setAttribute('text-anchor', 'end');
+            label.setAttribute('fill', 'white');
+            label.setAttribute('font-size', '12');
+            label.textContent = value;
+            axisG.appendChild(label);
+            
+            // 添加水平网格线
+            const gridLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            gridLine.setAttribute('x1', '0');
+            gridLine.setAttribute('y1', y);
+            gridLine.setAttribute('x2', '300');
+            gridLine.setAttribute('y2', y);
+            gridLine.setAttribute('stroke', '#444');
+            gridLine.setAttribute('stroke-width', '0.5');
+            axisG.appendChild(gridLine);
+          }
+          
+          // 绘制图例
+          const legend = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          legend.setAttribute('transform', 'translate(200, 40)');
+          axisG.appendChild(legend);
+          
+          data.forEach((series, seriesIndex) => {
+            const legendItem = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            legendItem.setAttribute('transform', `translate(${seriesIndex * 70}, 0)`);
+            
+            const legendColor = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            legendColor.setAttribute('width', '10');
+            legendColor.setAttribute('height', '10');
+            legendColor.setAttribute('fill', series.color);
+            
+            const legendText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            legendText.setAttribute('x', '15');
+            legendText.setAttribute('y', '9');
+            legendText.setAttribute('fill', 'white');
+            legendText.setAttribute('font-size', '12');
+            legendText.textContent = series.name;
+            
+            legendItem.appendChild(legendColor);
+            legendItem.appendChild(legendText);
+            legend.appendChild(legendItem);
+          });
+          
+          // 绘制折线图
+          data.forEach(series => {
+            // 创建线条路径
+            let pathData = '';
+            
+            series.values.forEach((value, index) => {
+              const x = index * (300 / (series.values.length - 1));
+              const y = 300 - (value / maxValue) * 280;
+              
+              if (index === 0) {
+                pathData += `M ${x} ${y}`;
+              } else {
+                pathData += ` L ${x} ${y}`;
+              }
+              
+              // 创建数据点
+              const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+              dot.setAttribute('cx', x);
+              dot.setAttribute('cy', y);
+              dot.setAttribute('r', '4');
+              dot.setAttribute('fill', series.color);
+              
+              // 添加悬停效果
+              dot.onmouseover = function() {
+                this.setAttribute('r', '6');
+                
+                const tooltip = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                tooltip.setAttribute('id', 'tooltip');
+                tooltip.setAttribute('x', x);
+                tooltip.setAttribute('y', y - 10);
+                tooltip.setAttribute('text-anchor', 'middle');
+                tooltip.setAttribute('fill', 'white');
+                tooltip.setAttribute('font-size', '12');
+                tooltip.textContent = `${series.name}: ${value}`;
+                axisG.appendChild(tooltip);
+              };
+              
+              dot.onmouseout = function() {
+                this.setAttribute('r', '4');
+                const tooltip = svg.getElementById('tooltip');
+                if (tooltip) axisG.removeChild(tooltip);
+              };
+              
+              axisG.appendChild(dot);
+            });
+            
+            // 创建线条
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', pathData);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', series.color);
+            path.setAttribute('stroke-width', '2');
+            axisG.appendChild(path);
+          });
+          
+          hideLoading();
+        } catch (error) {
+          console.error("绘制折线图出错:", error);
+          const chartElement = clearChart();
+          const errorMsg = document.createElement('div');
+          errorMsg.style.padding = '20px';
+          errorMsg.style.color = 'red';
+          errorMsg.textContent = '绘制图表时出错: ' + error.message;
+          chartElement.appendChild(errorMsg);
+          hideLoading();
+        }
+      }, 500);
+    }
+    
+    // 页面加载完成后自动显示饼图
+    window.onload = function() {
+      drawPieChart();
+    };
+  </script>
+</body>
+</html> 

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>最简单的图表示例</title>
+  <!-- 直接内联一个简单的样式 -->
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #1e1e1e;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #333;
+      border-radius: 8px;
+    }
+    h1 {
+      color: #FF00FF;
+      text-align: center;
+    }
+    #chart {
+      width: 100%;
+      height: 400px;
+      margin: 20px 0;
+    }
+    .button {
+      background-color: #FF00FF;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-block;
+      margin: 10px;
+      text-decoration: none;
+      text-align: center;
+    }
+    .button.cyan {
+      background-color: #00FFFF;
+      color: black;
+    }
+    .center {
+      text-align: center;
+    }
+  </style>
+  <!-- 直接从CDN加载ECharts -->
+  <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>超简单图表示例</h1>
+    
+    <!-- 图表容器 -->
+    <div id="chart"></div>
+    
+    <div class="center">
+      <button class="button" onclick="initChart()">重新加载图表</button>
+      <a href="/" class="button cyan">返回主页</a>
+    </div>
+  </div>
+
+  <script>
+    // 在页面加载完成后初始化图表
+    window.onload = function() {
+      initChart();
+    };
+
+    // 简单的初始化函数
+    function initChart() {
+      // 获取DOM元素
+      var chartDom = document.getElementById('chart');
+      
+      // 初始化ECharts实例
+      var myChart = echarts.init(chartDom);
+      
+      // 配置项
+      var option = {
+        title: {
+          text: '樱花巡礼访问人数',
+          left: 'center',
+          textStyle: {
+            color: '#fff'
+          }
+        },
+        tooltip: {
+          trigger: 'item',
+          formatter: '{a} <br/>{b}: {c} ({d}%)'
+        },
+        legend: {
+          orient: 'vertical',
+          left: 'left',
+          textStyle: {
+            color: '#fff'
+          }
+        },
+        series: [
+          {
+            name: '访问量',
+            type: 'pie',
+            radius: '50%',
+            data: [
+              { value: 35, name: '东京' },
+              { value: 25, name: '京都' },
+              { value: 20, name: '大阪' },
+              { value: 15, name: '奈良' },
+              { value: 5, name: '其他' }
+            ],
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
+            }
+          }
+        ]
+      };
+
+      // 使用配置项设置图表
+      myChart.setOption(option);
+    }
+  </script>
+</body>
+</html> 

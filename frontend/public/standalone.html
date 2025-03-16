@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>樱花巡礼 - 独立数据图表</title>
+  <!-- 使用多个CDN源，提高加载成功率 -->
+  <script>
+    // 检测ECharts是否已加载成功的函数
+    function isEChartsLoaded() {
+      return typeof echarts !== 'undefined';
+    }
+    
+    // 加载失败时的处理
+    function handleLoadError() {
+      console.error('ECharts加载失败，尝试备用源');
+      let errorDiv = document.createElement('div');
+      errorDiv.innerHTML = '<strong>警告：</strong> 图表库加载失败，正在尝试备用方案...';
+      errorDiv.style.backgroundColor = 'rgba(255, 200, 0, 0.2)';
+      errorDiv.style.color = '#ffcc00';
+      errorDiv.style.padding = '10px';
+      errorDiv.style.borderRadius = '4px';
+      errorDiv.style.margin = '10px 0';
+      errorDiv.style.textAlign = 'center';
+      
+      document.body.insertBefore(errorDiv, document.body.firstChild);
+      
+      // 尝试加载备用CDN
+      loadScript('https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js');
+    }
+    
+    // 动态加载脚本
+    function loadScript(url) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.onload = resolve;
+        script.onerror = reject;
+        script.src = url;
+        document.head.appendChild(script);
+      });
+    }
+    
+    // 主要CDN
+    document.write('<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js" onerror="handleLoadError()"><\/script>');
+    
+    // 如果第一个脚本加载失败，15秒后检查，如果仍然失败，尝试第三个备选方案
+    setTimeout(() => {
+      if (!isEChartsLoaded()) {
+        console.error('备用CDN也加载失败，尝试加载本地文件');
+        loadScript('/assets/echarts.min.js').catch(() => {
+          // 显示严重错误
+          document.getElementById('error-container').style.display = 'block';
+          document.getElementById('error-message').textContent = 'ECharts库加载失败。请检查网络连接或尝试刷新页面。';
+        });
+      }
+    }, 15000);
+  </script>
+  
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Arial', sans-serif;
+      background-color: #1e1e1e;
+      color: white;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #2d2d2d;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    h1 {
+      text-align: center;
+      color: #FF00FF;
+      margin-bottom: 20px;
+    }
+    .description {
+      text-align: center;
+      color: #aaa;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .chart-container {
+      width: 100%;
+      height: 400px;
+      margin-bottom: 20px;
+      border: 1px solid #444;
+      border-radius: 4px;
+      position: relative;
+    }
+    .chart-selector {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .chart-selector button {
+      background-color: #333;
+      color: #ccc;
+      border: 1px solid #555;
+      border-radius: 4px;
+      padding: 8px 12px;
+      margin: 0 5px;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .chart-selector button.active {
+      background-color: #FF00FF;
+      color: white;
+      border-color: #FF00FF;
+    }
+    .chart-selector button:hover:not(.active) {
+      background-color: #444;
+    }
+    .loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 2;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #FF00FF;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    .error-message {
+      background-color: rgba(255, 0, 0, 0.2);
+      border: 1px solid #ff0000;
+      color: #ff6666;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      text-align: center;
+      display: none;
+    }
+    .button {
+      display: inline-block;
+      padding: 8px 16px;
+      background-color: #FF00FF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 0 10px;
+      text-decoration: none;
+      text-align: center;
+      transition: background-color 0.3s;
+    }
+    .button:hover {
+      background-color: #cc00cc;
+    }
+    .button.cyan {
+      background-color: #00FFFF;
+      color: black;
+    }
+    .button.cyan:hover {
+      background-color: #00cccc;
+    }
+    .button-container {
+      text-align: center;
+      margin-top: 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>樱花巡礼 - 数据可视化</h1>
+    <p class="description">
+      这是一个独立的图表页面，不依赖于React应用。<br>
+      您可以在这里查看各种数据可视化图表，避免主应用中可能出现的渲染问题。
+    </p>
+    
+    <div class="error-message" id="error-container">
+      <strong>错误：</strong> <span id="error-message"></span>
+    </div>
+    
+    <div class="chart-selector">
+      <button class="active" data-chart="pie">访问量饼图</button>
+      <button data-chart="bar">地区柱状图</button>
+      <button data-chart="line">时间趋势图</button>
+    </div>
+    
+    <div class="chart-container">
+      <div id="chart"></div>
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+      </div>
+    </div>
+    
+    <div class="button-container">
+      <button class="button" id="reload-btn">重新加载图表</button>
+      <a class="button cyan" href="/">返回主应用</a>
+    </div>
+  </div>
+
+  <script>
+    // 全局变量
+    let currentChart = 'pie';
+    let chartInstance = null;
+    
+    // 检查ECharts是否已加载
+    function checkEChartsLoaded() {
+      if (typeof echarts === 'undefined') {
+        showError('ECharts库尚未加载，请稍后再试或刷新页面');
+        return false;
+      }
+      return true;
+    }
+    
+    // 显示加载状态
+    function showLoading() {
+      document.getElementById('loading').style.display = 'flex';
+    }
+    
+    // 隐藏加载状态
+    function hideLoading() {
+      document.getElementById('loading').style.display = 'none';
+    }
+    
+    // 显示错误信息
+    function showError(message) {
+      const errorContainer = document.getElementById('error-container');
+      const errorMessage = document.getElementById('error-message');
+      
+      errorMessage.textContent = message;
+      errorContainer.style.display = 'block';
+    }
+    
+    // 隐藏错误信息
+    function hideError() {
+      document.getElementById('error-container').style.display = 'none';
+    }
+    
+    // 安全地执行函数
+    function safeExecute(fn) {
+      try {
+        return fn();
+      } catch (e) {
+        console.error('执行错误:', e);
+        showError(`操作失败: ${e.message || '未知错误'}`);
+        return null;
+      }
+    }
+    
+    // 安全地处理DOM元素
+    function safeGetElement(id) {
+      const element = document.getElementById(id);
+      if (!element) {
+        console.error(`找不到元素: ${id}`);
+        return null;
+      }
+      return element;
+    }
+    
+    // 安全地清理旧图表实例
+    function safeDisposeChart() {
+      if (chartInstance) {
+        try {
+          // 检查实例是否已经被处理
+          if (!chartInstance.isDisposed()) {
+            chartInstance.dispose();
+          }
+        } catch (e) {
+          console.error('销毁图表实例时出错:', e);
+        } finally {
+          chartInstance = null;
+        }
+      }
+    }
+    
+    // 安全地初始化图表容器
+    function safeInitChart() {
+      // 先确保没有存在的实例
+      safeDisposeChart();
+      
+      const chartContainer = safeGetElement('chart');
+      if (!chartContainer) {
+        showError('找不到图表容器元素');
+        return null;
+      }
+      
+      try {
+        // 确保容器清空，避免removeChild错误
+        chartContainer.innerHTML = '';
+        
+        // 创建新实例
+        return echarts.init(chartContainer);
+      } catch (e) {
+        console.error('初始化图表实例时出错:', e);
+        showError(`初始化图表失败: ${e.message || '未知错误'}`);
+        return null;
+      }
+    }
+    
+    // 渲染饼图
+    function renderPieChart() {
+      if (!checkEChartsLoaded()) return;
+      
+      showLoading();
+      hideError();
+      
+      safeExecute(() => {
+        const chart = safeInitChart();
+        if (!chart) return;
+        
+        chartInstance = chart;
+        
+        const option = {
+          backgroundColor: 'transparent',
+          title: {
+            text: '各地区访问量分布',
+            left: 'center',
+            textStyle: {
+              color: '#fff'
+            }
+          },
+          tooltip: {
+            trigger: 'item',
+            formatter: '{a} <br/>{b}: {c} ({d}%)'
+          },
+          legend: {
+            orient: 'vertical',
+            left: 'left',
+            textStyle: {
+              color: '#fff'
+            }
+          },
+          series: [
+            {
+              name: '访问来源',
+              type: 'pie',
+              radius: ['40%', '70%'],
+              avoidLabelOverlap: false,
+              itemStyle: {
+                borderRadius: 10,
+                borderColor: '#222',
+                borderWidth: 2
+              },
+              label: {
+                show: true,
+                color: '#fff'
+              },
+              emphasis: {
+                label: {
+                  show: true,
+                  fontSize: 16,
+                  fontWeight: 'bold'
+                }
+              },
+              data: [
+                { value: 1048, name: '东京' },
+                { value: 735, name: '京都' },
+                { value: 580, name: '大阪' },
+                { value: 484, name: '奈良' },
+                { value: 300, name: '其他' }
+              ]
+            }
+          ]
+        };
+        
+        chart.setOption(option);
+        hideLoading();
+      });
+    }
+    
+    // 渲染柱状图
+    function renderBarChart() {
+      if (!checkEChartsLoaded()) return;
+      
+      showLoading();
+      hideError();
+      
+      safeExecute(() => {
+        const chart = safeInitChart();
+        if (!chart) return;
+        
+        chartInstance = chart;
+        
+        const option = {
+          backgroundColor: 'transparent',
+          title: {
+            text: '各地区游客数量',
+            left: 'center',
+            textStyle: {
+              color: '#fff'
+            }
+          },
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'shadow'
+            }
+          },
+          grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+          },
+          xAxis: {
+            type: 'category',
+            data: ['东京', '京都', '大阪', '奈良', '神户', '镰仓', '富士山'],
+            axisLine: {
+              lineStyle: {
+                color: '#ccc'
+              }
+            },
+            axisLabel: {
+              color: '#fff'
+            }
+          },
+          yAxis: {
+            type: 'value',
+            axisLine: {
+              lineStyle: {
+                color: '#ccc'
+              }
+            },
+            axisLabel: {
+              color: '#fff'
+            },
+            splitLine: {
+              lineStyle: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              }
+            }
+          },
+          series: [
+            {
+              name: '游客数量',
+              type: 'bar',
+              barWidth: '60%',
+              data: [
+                {value: 1050, itemStyle: {color: '#FF00FF'}},
+                {value: 820, itemStyle: {color: '#00FFFF'}},
+                {value: 750, itemStyle: {color: '#39FF14'}},
+                {value: 600, itemStyle: {color: '#FFA500'}},
+                {value: 500, itemStyle: {color: '#1E90FF'}},
+                {value: 380, itemStyle: {color: '#FF6347'}},
+                {value: 250, itemStyle: {color: '#9370DB'}}
+              ]
+            }
+          ]
+        };
+        
+        chart.setOption(option);
+        hideLoading();
+      });
+    }
+    
+    // 渲染折线图
+    function renderLineChart() {
+      if (!checkEChartsLoaded()) return;
+      
+      showLoading();
+      hideError();
+      
+      safeExecute(() => {
+        const chart = safeInitChart();
+        if (!chart) return;
+        
+        chartInstance = chart;
+        
+        const option = {
+          backgroundColor: 'transparent',
+          title: {
+            text: '月度访问量趋势',
+            left: 'center',
+            textStyle: {
+              color: '#fff'
+            }
+          },
+          tooltip: {
+            trigger: 'axis'
+          },
+          legend: {
+            data: ['东京', '京都'],
+            textStyle: {
+              color: '#fff'
+            },
+            top: 30
+          },
+          grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+          },
+          xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+            axisLine: {
+              lineStyle: {
+                color: '#ccc'
+              }
+            },
+            axisLabel: {
+              color: '#fff'
+            }
+          },
+          yAxis: {
+            type: 'value',
+            axisLine: {
+              lineStyle: {
+                color: '#ccc'
+              }
+            },
+            axisLabel: {
+              color: '#fff'
+            },
+            splitLine: {
+              lineStyle: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              }
+            }
+          },
+          series: [
+            {
+              name: '东京',
+              type: 'line',
+              data: [120, 132, 101, 134, 290, 230, 220, 300, 180, 160, 140, 190],
+              itemStyle: {
+                color: '#FF00FF'
+              },
+              lineStyle: {
+                width: 3
+              }
+            },
+            {
+              name: '京都',
+              type: 'line',
+              data: [80, 70, 90, 250, 260, 170, 140, 190, 140, 120, 100, 110],
+              itemStyle: {
+                color: '#00FFFF'
+              },
+              lineStyle: {
+                width: 3
+              }
+            }
+          ]
+        };
+        
+        chart.setOption(option);
+        hideLoading();
+      });
+    }
+    
+    // 渲染当前选择的图表
+    function renderCurrentChart() {
+      switch(currentChart) {
+        case 'pie':
+          renderPieChart();
+          break;
+        case 'bar':
+          renderBarChart();
+          break;
+        case 'line':
+          renderLineChart();
+          break;
+        default:
+          renderPieChart();
+      }
+    }
+    
+    // 初始化页面
+    function initPage() {
+      // 添加图表选择器事件监听
+      const buttons = document.querySelectorAll('.chart-selector button');
+      buttons.forEach(button => {
+        button.addEventListener('click', function() {
+          // 移除所有active类
+          buttons.forEach(btn => btn.classList.remove('active'));
+          // 添加当前active类
+          this.classList.add('active');
+          // 更新当前图表类型
+          currentChart = this.getAttribute('data-chart');
+          // 渲染选中的图表
+          renderCurrentChart();
+        });
+      });
+      
+      // 添加重新加载按钮事件
+      const reloadBtn = document.getElementById('reload-btn');
+      if (reloadBtn) {
+        reloadBtn.addEventListener('click', function() {
+          renderCurrentChart();
+        });
+      }
+      
+      // 初始渲染饼图
+      renderCurrentChart();
+      
+      // 添加窗口大小变化处理
+      window.addEventListener('resize', function() {
+        if (chartInstance && !chartInstance.isDisposed()) {
+          chartInstance.resize();
+        }
+      });
+    }
+    
+    // 确保DOM加载完成后初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      // 稍微延迟初始化，确保ECharts完全加载
+      setTimeout(function() {
+        if (checkEChartsLoaded()) {
+          initPage();
+        } else {
+          // 继续等待ECharts加载
+          const checkInterval = setInterval(function() {
+            if (checkEChartsLoaded()) {
+              clearInterval(checkInterval);
+              initPage();
+            }
+          }, 1000);
+          
+          // 如果长时间未加载成功，显示错误
+          setTimeout(function() {
+            clearInterval(checkInterval);
+            if (!checkEChartsLoaded()) {
+              showError('图表库加载超时，请刷新页面重试');
+            }
+          }, 30000);
+        }
+      }, 500);
+    });
+    
+    // 页面卸载前清理
+    window.addEventListener('beforeunload', function() {
+      safeDisposeChart();
+    });
+  </script>
+  
+  <!-- 备份本地版本，以防CDN加载失败 -->
+  <script>
+    // 检查是否已经加载成功
+    setTimeout(function() {
+      if (typeof echarts === 'undefined') {
+        console.warn('ECharts库仍未加载，尝试内联方案');
+        
+        // 创建一个简单的替代实现
+        window.echarts = {
+          init: function(dom) {
+            console.log('使用内联实现的echarts.init');
+            dom.innerHTML = '<div style="color:yellow;text-align:center;padding-top:150px;">图表库加载失败<br>请尝试刷新页面或检查网络连接</div>';
+            return {
+              setOption: function() { console.log('模拟setOption调用'); },
+              resize: function() { console.log('模拟resize调用'); },
+              isDisposed: function() { return false; },
+              dispose: function() { console.log('模拟dispose调用'); }
+            };
+          },
+          graphic: {
+            LinearGradient: function() { return '#FF00FF'; }
+          }
+        };
+        
+        // 尝试初始化图表
+        init();
+      }
+    }, 5000);
+  </script>
+</body>
+</html> 
