@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>简单折线图</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #1e1e1e;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #333;
+      border-radius: 8px;
+    }
+    h1 {
+      color: #FF00FF;
+      text-align: center;
+    }
+    #chart {
+      width: 100%;
+      height: 400px;
+      margin: 20px 0;
+    }
+    .button {
+      background-color: #FF00FF;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-block;
+      margin: 10px;
+      text-decoration: none;
+      text-align: center;
+    }
+    .button.cyan {
+      background-color: #00FFFF;
+      color: black;
+    }
+    .nav {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+  </style>
+  <!-- 使用不同的CDN加载ECharts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>樱花巡礼 - 季节趋势图</h1>
+    
+    <div class="nav">
+      <a href="simple-chart.html" class="button">饼图</a>
+      <a href="bar-chart.html" class="button">柱状图</a>
+      <a href="line-chart.html" class="button" style="background-color: #00FFFF; color: black;">折线图</a>
+      <a href="/" class="button" style="background-color: #666;">返回主页</a>
+    </div>
+    
+    <!-- 图表容器 -->
+    <div id="chart"></div>
+  </div>
+
+  <script>
+    // 页面加载完成后初始化图表
+    document.addEventListener('DOMContentLoaded', function() {
+      // 获取DOM元素
+      var chartDom = document.getElementById('chart');
+      
+      // 初始化ECharts实例
+      var myChart = echarts.init(chartDom);
+      
+      // 配置项
+      var option = {
+        title: {
+          text: '月度游客变化趋势',
+          textStyle: {
+            color: '#fff'
+          }
+        },
+        tooltip: {
+          trigger: 'axis'
+        },
+        legend: {
+          data: ['东京', '京都'],
+          textStyle: {
+            color: '#fff'
+          }
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'category',
+          boundaryGap: false,
+          data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+          axisLabel: {
+            color: '#fff'
+          }
+        },
+        yAxis: {
+          type: 'value',
+          name: '游客数量',
+          axisLabel: {
+            color: '#fff'
+          }
+        },
+        series: [
+          {
+            name: '东京',
+            type: 'line',
+            data: [20, 25, 40, 70, 100, 60, 50, 80, 90, 50, 30, 20],
+            smooth: true,
+            lineStyle: {
+              width: 3,
+              color: '#FF00FF'
+            },
+            itemStyle: {
+              color: '#FF00FF'
+            },
+            markPoint: {
+              data: [
+                { type: 'max', name: '最大值' },
+                { type: 'min', name: '最小值' }
+              ]
+            }
+          },
+          {
+            name: '京都',
+            type: 'line',
+            data: [15, 20, 35, 60, 80, 70, 40, 50, 70, 40, 25, 15],
+            smooth: true,
+            lineStyle: {
+              width: 3,
+              color: '#00FFFF'
+            },
+            itemStyle: {
+              color: '#00FFFF'
+            },
+            markPoint: {
+              data: [
+                { type: 'max', name: '最大值' },
+                { type: 'min', name: '最小值' }
+              ]
+            }
+          }
+        ]
+      };
+
+      // 使用配置项设置图表
+      myChart.setOption(option);
+      
+      // 响应窗口大小变化
+      window.addEventListener('resize', function() {
+        myChart.resize();
+      });
+    });
+  </script>
+</body>
+</html> 

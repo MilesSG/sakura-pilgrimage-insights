@@ -5,9 +5,9 @@ import Navbar from './components/Navbar'
 
 function App() {
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full flex flex-col" style={{ minHeight: '100vh' }}>
       <Navbar />
-      <div style={{ paddingTop: '4rem' }}>
+      <div className="flex-1" style={{ paddingTop: '4rem' }}>
         <Outlet />
       </div>
     </div>

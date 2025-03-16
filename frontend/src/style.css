@@ -27,11 +27,18 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
   background-color: var(--dark-base);
+  overflow-x: hidden;
 }
 
 /* 霓虹文字效果 */
@@ -66,9 +73,17 @@ body {
   box-shadow: 0 0 5px var(--neon-pink), 0 0 10px var(--neon-pink);
 }
 
+.neon-border-pink:hover {
+  box-shadow: 0 0 8px var(--neon-pink), 0 0 15px var(--neon-pink), 0 0 20px var(--neon-pink);
+}
+
 .neon-border-blue {
   border-color: var(--neon-blue);
   box-shadow: 0 0 5px var(--neon-blue), 0 0 10px var(--neon-blue);
+}
+
+.neon-border-blue:hover {
+  box-shadow: 0 0 8px var(--neon-blue), 0 0 15px var(--neon-blue), 0 0 20px var(--neon-blue);
 }
 
 .neon-border-purple {
@@ -76,9 +91,17 @@ body {
   box-shadow: 0 0 5px var(--neon-purple), 0 0 10px var(--neon-purple);
 }
 
+.neon-border-purple:hover {
+  box-shadow: 0 0 8px var(--neon-purple), 0 0 15px var(--neon-purple), 0 0 20px var(--neon-purple);
+}
+
 .neon-border-green {
   border-color: var(--neon-green);
   box-shadow: 0 0 5px var(--neon-green), 0 0 10px var(--neon-green);
+}
+
+.neon-border-green:hover {
+  box-shadow: 0 0 8px var(--neon-green), 0 0 15px var(--neon-green), 0 0 20px var(--neon-green);
 }
 
 /* 卡片样式 */
@@ -90,12 +113,19 @@ body {
 }
 
 .dashboard-card {
+  background-color: var(--dark-surface);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   cursor: pointer;
+  margin-bottom: 1rem;
+  border: 2px solid transparent;
 }
 
 .dashboard-card:hover {
   transform: scale(1.02);
+  box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
 }
 
 /* 布局辅助类 */
@@ -315,4 +345,206 @@ body {
   .md\:hidden {
     display: none;
   }
+}
+
+/* 专门为分析引擎页面添加布局支持 */
+.analysis-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .analysis-grid {
+    grid-template-columns: minmax(300px, 1fr) 2fr;
+  }
+}
+
+/* Spark分析页面卡片 */
+.analysis-card {
+  background-color: var(--dark-elevated);
+  border-radius: 0.5rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  padding: 1.5rem;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.analysis-card:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.task-item {
+  background-color: var(--dark-surface);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+}
+
+.task-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.task-status {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.status-completed {
+  background: rgba(0, 128, 0, 0.3);
+  color: #9AE6B4;
+}
+
+.status-running {
+  background: rgba(0, 0, 255, 0.3);
+  color: #90CDF4;
+}
+
+.status-error {
+  background: rgba(255, 0, 0, 0.3);
+  color: #FEB2B2;
+}
+
+.status-idle {
+  background: rgba(128, 128, 128, 0.3);
+  color: #CBD5E0;
+}
+
+.task-description {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.75rem;
+}
+
+.progress-bar {
+  width: 100%;
+  background: var(--dark-base);
+  border-radius: 9999px;
+  height: 0.5rem;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: linear-gradient(to right, var(--neon-purple), var(--neon-blue));
+  transition: width 0.3s ease;
+}
+
+.btn {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: rgba(157, 0, 255, 0.2);
+  color: var(--neon-purple);
+}
+
+.btn-primary:hover {
+  background: rgba(157, 0, 255, 0.3);
+}
+
+.btn-secondary {
+  background: var(--dark-base);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.btn-secondary:hover {
+  background: var(--dark-elevated);
+}
+
+.btn-success {
+  background: rgba(57, 255, 20, 0.2);
+  color: var(--neon-green);
+}
+
+.btn-success:hover {
+  background: rgba(57, 255, 20, 0.3);
+}
+
+.btn-full {
+  flex: 1;
+}
+
+.code-block {
+  background: #1a1a1a;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  font-family: monospace;
+  font-size: 0.875rem;
+  overflow-x: auto;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.spinner {
+  width: 3rem;
+  height: 3rem;
+  border-width: 4px;
+  border-style: solid;
+  border-color: var(--neon-purple);
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Leaflet地图样式 */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.custom-neon-marker {
+  position: relative;
+}
+
+.custom-neon-marker div {
+  border: 2px solid var(--neon-blue);
+  box-shadow: 0 0 5px var(--neon-blue), 0 0 10px var(--neon-blue);
+}
+
+/* 确保其他元素不覆盖地图控件 */
+.leaflet-control-container .leaflet-top,
+.leaflet-control-container .leaflet-bottom {
+  z-index: 5;
+}
+
+/* 改进地图控件样式 */
+.leaflet-control-zoom a {
+  background-color: var(--dark-elevated) !important;
+  color: white !important;
+  border-color: var(--neon-blue) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: var(--dark-surface) !important;
+}
+
+/* 确保地图容器和地图元素有正确的尺寸 */
+#mapRef, .leaflet-map-pane {
+  width: 100%;
+  height: 100%;
 }

@@ -24,7 +24,7 @@ function Dashboard() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6"
         >
           {/* 核心功能卡片 */}
           <Link to="/crawler">
@@ -33,7 +33,7 @@ function Dashboard() {
               className="dashboard-card neon-border-pink"
             >
               <h2 className="text-xl font-bold neon-text-pink mb-4">爬虫模拟模块</h2>
-              <p style={{ color: 'rgba(255, 255, 255, 0.7)' }}>获取B站/小红书数据，分析热门动漫圣地趋势</p>
+              <p style={{ color: 'rgba(255, 255, 255, 0.7)' }}>获取B站/小红书数据，分析热门圣地趋势</p>
             </motion.div>
           </Link>
 
@@ -54,16 +54,6 @@ function Dashboard() {
             >
               <h2 className="text-xl font-bold neon-text-blue mb-4">3D地图可视化</h2>
               <p style={{ color: 'rgba(255, 255, 255, 0.7)' }}>沉浸式体验动漫圣地地理分布</p>
-            </motion.div>
-          </Link>
-
-          <Link to="/insights">
-            <motion.div 
-              whileHover={{ scale: 1.05 }}
-              className="dashboard-card neon-border-green"
-            >
-              <h2 className="text-xl font-bold neon-text-green mb-4">数据驾驶舱</h2>
-              <p style={{ color: 'rgba(255, 255, 255, 0.7)' }}>多维交互式图表展示巡礼热点数据</p>
             </motion.div>
           </Link>
         </motion.div>

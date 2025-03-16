@@ -7,7 +7,7 @@ const navItems = [
   { name: '爬虫模块', path: '/crawler' },
   { name: '分析引擎', path: '/analysis' },
   { name: '地图可视化', path: '/map' },
-  { name: '数据洞察', path: '/insights' },
+  { name: '测试页面', path: '/test' },
 ];
 
 function Navbar() {
